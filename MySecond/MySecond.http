@@ -1,0 +1,6 @@
+@MySecond_HostAddress = http://localhost:5128
+
+GET {{MySecond_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
