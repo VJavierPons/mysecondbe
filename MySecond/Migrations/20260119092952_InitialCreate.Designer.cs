@@ -12,7 +12,7 @@ using MySecond.Data;
 namespace MySecond.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260113130423_InitialCreate")]
+    [Migration("20260119092952_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

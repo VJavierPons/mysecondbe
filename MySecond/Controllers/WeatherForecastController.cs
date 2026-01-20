@@ -5,14 +5,9 @@ using MySecond.Data;
 namespace MySecond.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/weatherforecast")]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
         private readonly ILogger<WeatherForecastController> _logger;
         private readonly ApplicationDbContext _context;
 
@@ -22,13 +17,13 @@ namespace MySecond.Controllers
             _context = context;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<WeatherForecast>>> Get()
         {
             return await _context.WeatherForecasts.ToListAsync();
         }
 
-        [HttpPost(Name = "PostWeatherForecast")]
+        [HttpPost]
         public async Task<IActionResult> Post([FromBody] WeatherForecast forecast)
         {
             if (forecast == null)
@@ -36,12 +31,29 @@ namespace MySecond.Controllers
                 return BadRequest();
             }
 
-            _context.WeatherForecasts.Add(forecast);
-            await _context.SaveChangesAsync();
+            var existingForecast = await _context.WeatherForecasts.FindAsync(forecast.Id);
 
-            return CreatedAtAction(nameof(Get), new { id = forecast.Id }, forecast);
+            if (existingForecast != null)
+            {
+                existingForecast.Date = forecast.Date;
+                existingForecast.TemperatureC = forecast.TemperatureC;
+                existingForecast.Summary = forecast.Summary;
+
+                _context.WeatherForecasts.Update(existingForecast);
+                await _context.SaveChangesAsync();
+
+                return Ok(existingForecast);
+            }
+            else
+            {
+                _context.WeatherForecasts.Add(forecast);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction(nameof(Get), new { id = forecast.Id }, forecast);
+            }
         }
-        [HttpDelete("{id}", Name = "DeleteWeatherForecast")]
+
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             var forecast = await _context.WeatherForecasts.FindAsync(id);
